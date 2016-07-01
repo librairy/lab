@@ -12,12 +12,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package lab.multiagents;
+package lab.ma;
 
 import com.google.common.collect.ImmutableMap;
-import lab.multiagents.domain.Agent;
-import lab.multiagents.domain.TextAgent;
-import lab.multiagents.domain.TopicAgent;
+import lab.ma.domain.Agent;
+import lab.ma.domain.TextAgent;
+import lab.ma.domain.TopicAgent;
 import org.librairy.storage.UDM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,6 @@ import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
 import sim.util.MutableDouble2D;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**

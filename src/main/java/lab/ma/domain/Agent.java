@@ -13,9 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package lab.multiagents.domain;
+package lab.ma.domain;
 
-import lab.multiagents.Environment;
+import lab.ma.Environment;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;

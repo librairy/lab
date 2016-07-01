@@ -1,4 +1,4 @@
-package lab.multiagents.domain;
+package lab.ma.domain;
 
 /**
  * Created by cbadenes on 14/02/16.

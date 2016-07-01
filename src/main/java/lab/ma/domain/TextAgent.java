@@ -13,9 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package lab.multiagents.domain;
+package lab.ma.domain;
 
-import lab.multiagents.Environment;
+import lab.ma.Environment;
 import org.librairy.model.domain.relations.Relationship;
 import sim.util.Bag;
 import sim.util.Double2D;

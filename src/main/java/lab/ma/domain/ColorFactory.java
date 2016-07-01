@@ -1,4 +1,4 @@
-package lab.multiagents.domain;
+package lab.ma.domain;
 
 import java.awt.*;
 
