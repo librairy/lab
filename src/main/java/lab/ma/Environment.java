@@ -122,13 +122,13 @@ public class Environment extends SimState {
         HashMap<String,TopicAgent> topics       = new HashMap<String, TopicAgent>();
         HashMap<String,TextAgent> documents = new HashMap<String, TextAgent>();
 
-        topics.put("t1",new TopicAgent(this, "t1", ImmutableMap.of("a",0.1,"b",0.1,"c",0.1)));
+        topics.put("t1",new TopicAgent(this, "t1", ImmutableMap.of("a",0.7,"b",0.5,"c",0.3)));
 
-        topics.put("t2",new TopicAgent(this, "t2", ImmutableMap.of("e",0.1,"b",0.1,"c",0.1)));
+        topics.put("t2",new TopicAgent(this, "t2", ImmutableMap.of("e",0.8,"b",0.4,"c",0.1)));
 
-        topics.put("t3",new TopicAgent(this, "t3", ImmutableMap.of("f",0.1,"g",0.1,"h",0.1)));
+        topics.put("t3",new TopicAgent(this, "t3", ImmutableMap.of("f",0.6,"g",0.5,"h",0.4)));
 
-        topics.put("t4",new TopicAgent(this, "t4", ImmutableMap.of("i",0.1,"j",0.1,"k",0.1)));
+        topics.put("t4",new TopicAgent(this, "t4", ImmutableMap.of("i",0.9,"j",0.3,"k",0.2)));
 
 
 

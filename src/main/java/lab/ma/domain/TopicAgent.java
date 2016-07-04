@@ -16,6 +16,8 @@
 package lab.ma.domain;
 
 import lab.ma.Environment;
+import lab.ma.distance.CommonWordsDistance;
+import lab.ma.distance.KendallDistance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sim.util.Bag;
@@ -26,18 +28,20 @@ import java.awt.*;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by cbadenes on 05/12/14.
  */
 public class TopicAgent extends Agent {
 
-
     private static final Logger LOG = LoggerFactory.getLogger(TopicAgent.class);
 
-    private Map<String,Double> words;
+    private final List<String> words;
+    private Map<String,Double> weightedWords;
 
-    public TopicAgent(Environment sim, String id, Map<String,Double> words) {
+    public TopicAgent(Environment sim, String id, Map<String,Double> weightedWords) {
         super(
                 sim.space.stx((sim.random.nextDouble() * sim.width) - (sim.width * 0.5)),
                 sim.space.sty((sim.random.nextDouble() * sim.height) - (sim.height * 0.5)),
@@ -49,7 +53,9 @@ public class TopicAgent extends Agent {
                 Type.TOPIC
         );
         sim.area.setObjectLocation(this,new Double2D(position));
-        this.words = words;
+        this.weightedWords = weightedWords;
+        this.words = weightedWords.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).map(entry ->
+                entry.getKey()).collect(Collectors.toList());
     }
 
     @Override
@@ -81,7 +87,7 @@ public class TopicAgent extends Agent {
 
                 if (agent instanceof TextAgent) continue;
 
-                //force = calculateDisplacementBy(agent.position, commonBtw(words,((TopicAgent) agent).words)*distance(agent.position, this.position));
+                //force = calculateDisplacementBy(agent.position, commonBtw(weightedWords,((TopicAgent) agent).weightedWords)*distance(agent.position, this.position));
                 //double force = -1/distance(agent.position, this.position);
                 double force = calculateForceFrom((TopicAgent) agent);
 //                if (force == 0.0) LOG.info("NO REPULSION");
@@ -109,14 +115,16 @@ public class TopicAgent extends Agent {
     private double calculateForceFrom(TopicAgent agent){
         DecimalFormat df = new DecimalFormat("##.##");
         df.setRoundingMode(RoundingMode.CEILING);
-        double distance = agent.distance(agent.position,this.position);
 
-        long common         = agent.words.keySet().stream().filter(word -> this.words.containsKey(word)).count();
-        int size            = this.words.size();
-        double minForce     = Double.valueOf(size)/sim.width;
+        double correlation = KendallDistance.correlation(this.words, agent.words);
+//        double correlation = CommonWordsDistance.correlation(this.words, agent.words);
 
-        double attraction   = Math.max(minForce,common);
-        double repulsion    = this.words.size() - common;
+        double distance     = agent.distance(agent.position,this.position);
+
+        double minForce     = 0.05;
+
+        double attraction   = Math.max(minForce,correlation);
+        double repulsion    = 1 - correlation;
 
         //double attractiveForce  = Math.max(minForce, attraction / distance);
         double attractiveForce  = attraction / distance;

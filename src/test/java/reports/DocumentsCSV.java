@@ -42,9 +42,9 @@ import java.util.Optional;
         "librairy.eventbus.host = wiener.dia.fi.upm.es",
         "librairy.eventbus.port = 5041",
 })
-public class CSVBuilder {
+public class DocumentsCSV {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CSVBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DocumentsCSV.class);
 
     @Autowired
     UDM udm;
