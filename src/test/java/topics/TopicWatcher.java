@@ -108,8 +108,6 @@ public class TopicWatcher {
 
     private void deleteDuplicatedRelations(Resource.Type resourceRef, Relation.Type relationRef) throws IOException {
 
-        AtomicInteger counter = new AtomicInteger();
-
         Map<Integer,String> sentences = new HashMap<>();
 
         StringBuilder queryWriter = new StringBuilder();

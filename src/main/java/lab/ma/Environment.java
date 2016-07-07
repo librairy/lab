@@ -16,18 +16,22 @@ package lab.ma;
 
 import com.google.common.collect.ImmutableMap;
 import lab.ma.domain.Agent;
-import lab.ma.domain.TextAgent;
 import lab.ma.domain.TopicAgent;
+import org.apache.commons.math3.ml.clustering.Cluster;
+import org.apache.commons.math3.ml.clustering.Clusterable;
+import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.librairy.storage.UDM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sim.engine.Schedule;
-import sim.engine.SimState;
-import sim.engine.Steppable;
+import sim.engine.*;
 import sim.field.continuous.Continuous2D;
 import sim.util.MutableDouble2D;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by cbadenes on 05/12/14.
@@ -36,10 +40,12 @@ public class Environment extends SimState {
 
     private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
 
-    public double width             = 20.0;      // 7.0
+    public double width             = 20.0;      // 20.0
     public double height            = width;      // 7.0
     //public double agentRadius       = 0.06;     // 0.06
     public double agentRadius       = 0.1;     // 0.06
+
+    public double minForce          = 0.05;
 
     public MutableDouble2D center = new MutableDouble2D(width/2,height/2);
 
@@ -47,11 +53,16 @@ public class Environment extends SimState {
     public Continuous2D area;
 
     public TopicAgent[] topicAgents;
-    public TextAgent[] textAgents;
+
+    public static final List<String> vocabulary = Arrays.asList(new String[]{"a","b","c","d","e","f","g","h","i","j",
+            "k","l", "m","n"});
 
 
 //    private double range            = agentRadius*10;  // 0.8, 3.5
-    private double range            = width;  // 0.8, 3.5
+    //private double range            = width;  // 0.8, 3.5
+    private double range              =   Math.sqrt(1/minForce)*2;
+
+
     private double maxVelocity      = agentRadius/2;     // 0.06
 
     private int movementHistory     = 3;
@@ -82,28 +93,35 @@ public class Environment extends SimState {
         super(seed);
     }
 
+    public Environment() {
+        super(System.currentTimeMillis());
+    }
+
     public void setUdm(UDM udm){
         this.udm = udm;
     }
 
-    private Agent initializeParticle(final Agent agent){
+    private Agent initializeParticle(TopicAgent agent){
 //        schedule.scheduleRepeating(Schedule.EPOCH, 1, new Steppable() {
 //            public void step(SimState state) {
 //                agent.stepUpdateRadiation();
 //            }
 //        });
 
-        schedule.scheduleRepeating(Schedule.EPOCH, 2, new Steppable() {
+        Stoppable s2 = schedule.scheduleRepeating(Schedule.EPOCH, 2, new Steppable() {
             public void step(SimState state) {
                 agent.stepUpdateVelocity();
             }
         });
+        agent.add(s2);
 
-        schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
+
+        Stoppable s3 = schedule.scheduleRepeating(Schedule.EPOCH, 3, new Steppable() {
             public void step(SimState state) {
                 agent.stepUpdatePosition();
             }
         });
+        agent.add(s3);
 
 
         return agent;
@@ -115,13 +133,16 @@ public class Environment extends SimState {
         space = new Continuous2D(0.01, width, height);
         area  = new Continuous2D(0.04, width, height); // radioactive particles
 
-        // Load topics from DB
+        // Stop condition
+
+        addToAsynchronousRegistry(new StopCondition());
+
+
+
 
         LOG.info("reading relations to topic...");
 
         HashMap<String,TopicAgent> topics       = new HashMap<String, TopicAgent>();
-        HashMap<String,TextAgent> documents = new HashMap<String, TextAgent>();
-
         topics.put("t1",new TopicAgent(this, "t1", ImmutableMap.of("a",0.7,"b",0.5,"c",0.3)));
 
         topics.put("t2",new TopicAgent(this, "t2", ImmutableMap.of("e",0.8,"b",0.4,"c",0.1)));
@@ -129,6 +150,8 @@ public class Environment extends SimState {
         topics.put("t3",new TopicAgent(this, "t3", ImmutableMap.of("f",0.6,"g",0.5,"h",0.4)));
 
         topics.put("t4",new TopicAgent(this, "t4", ImmutableMap.of("i",0.9,"j",0.3,"k",0.2)));
+
+
 
 
 
@@ -168,11 +191,57 @@ public class Environment extends SimState {
 //            textAgents[index++] = (TextAgent) initializeParticle(documents.get(key));
 //        }
 
+
     }
 
-    public static void main(String[] args) {
-        doLoop(Environment.class, args);
-        System.exit(0);
+
+    public void build(){
+        System.setSecurityManager(new MySecurityManager());
+        Environment environment = this;
+        try{
+            doLoop(new MakesSimState() {
+                public SimState newInstance(long seed, String[] args) {
+                    return environment;
+                }
+
+                public Class simulationClass() {
+                    return environment.getClass();
+                }
+            }, new String[]{});
+        } catch (SecurityException e){
+        }
+    }
+
+
+    public void cluster(){
+
+        List<Clusterable> points = Arrays.stream(topicAgents).map(topic -> topic.getPosition()).collect(Collectors.toList());
+
+        int minPts = 0;
+        double eps = range/2;
+        LOG.info("MinPts:" + minPts + " | EPS:" + eps);
+        DBSCANClusterer clusterer = new DBSCANClusterer(eps,minPts, new EuclideanDistance());
+
+        LOG.info("Points: " + points);
+
+        List<Cluster> clusters = clusterer.cluster(points);
+
+        LOG.info("Number of clusters: " + clusters.size());
+
+        clusters.forEach(cluster -> {
+            LOG.info("> Points: "+cluster.getPoints());
+        });
+
+
+
+    }
+
+
+    public static void main(String[] args) throws InterruptedException {
+
+        Environment environment = new Environment();
+        environment.build();
+        environment.cluster();
     }
 
 }

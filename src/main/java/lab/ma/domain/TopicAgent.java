@@ -18,8 +18,10 @@ package lab.ma.domain;
 import lab.ma.Environment;
 import lab.ma.distance.CommonWordsDistance;
 import lab.ma.distance.KendallDistance;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sim.engine.Stoppable;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.MutableDouble2D;
@@ -38,8 +40,9 @@ public class TopicAgent extends Agent {
 
     private static final Logger LOG = LoggerFactory.getLogger(TopicAgent.class);
 
-    private final List<String> words;
-    private Map<String,Double> weightedWords;
+    public final List<String> words;
+    public Map<String,Double> weightedWords;
+    List<Stoppable> steps = new ArrayList<>();
 
     public TopicAgent(Environment sim, String id, Map<String,Double> weightedWords) {
         super(
@@ -56,6 +59,10 @@ public class TopicAgent extends Agent {
         this.weightedWords = weightedWords;
         this.words = weightedWords.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).map(entry ->
                 entry.getKey()).collect(Collectors.toList());
+    }
+
+    public void add(Stoppable step){
+        this.steps.add(step);
     }
 
     @Override
@@ -85,8 +92,6 @@ public class TopicAgent extends Agent {
 
                 if ((agent.id.equals(this.id))) continue;
 
-                if (agent instanceof TextAgent) continue;
-
                 //force = calculateDisplacementBy(agent.position, commonBtw(weightedWords,((TopicAgent) agent).weightedWords)*distance(agent.position, this.position));
                 //double force = -1/distance(agent.position, this.position);
                 double force = calculateForceFrom((TopicAgent) agent);
@@ -96,15 +101,14 @@ public class TopicAgent extends Agent {
             }
         }else{
             // random movement
-//            LOG.info("Random movement: " + this);
-//            MutableDouble2D endpoint = new MutableDouble2D();
-//            MutableDouble2D movement = new MutableDouble2D();
-//            do{
-//                endpoint.setTo(this.position);
-//                movement.setTo(randomMovement());
-//                endpoint.addIn(movement);
-//            }while(!moveFrom(endpoint, sim.getMaxVelocity()));
-//            displacement.addIn(movement);
+            MutableDouble2D endpoint = new MutableDouble2D();
+            MutableDouble2D movement = new MutableDouble2D();
+            do{
+                endpoint.setTo(this.position);
+                movement.setTo(randomMovement());
+                endpoint.addIn(movement);
+            }while(!moveFrom(endpoint, sim.getMaxVelocity()));
+            displacement.addIn(movement);
         }
 
 
@@ -116,19 +120,17 @@ public class TopicAgent extends Agent {
         DecimalFormat df = new DecimalFormat("##.##");
         df.setRoundingMode(RoundingMode.CEILING);
 
-        double correlation = KendallDistance.correlation(this.words, agent.words);
+        double correlation = KendallDistance.correlation(sim.vocabulary,this.weightedWords, agent.weightedWords);
 //        double correlation = CommonWordsDistance.correlation(this.words, agent.words);
 
         double distance     = agent.distance(agent.position,this.position);
 
-        double minForce     = 0.05;
-
-        double attraction   = Math.max(minForce,correlation);
+        double attraction   = Math.max(sim.minForce,correlation);
         double repulsion    = 1 - correlation;
 
         //double attractiveForce  = Math.max(minForce, attraction / distance);
         double attractiveForce  = attraction / distance;
-        double repulsiveForce   = repulsion / (Math.pow(distance,3.0));
+        double repulsiveForce   = repulsion / (Math.pow(distance,2.0));
 
         double force = attractiveForce - repulsiveForce;
         return Double.valueOf(df.format(force));
@@ -177,11 +179,21 @@ public class TopicAgent extends Agent {
 //            return;
 //        }
 
-        sim.space.setObjectLocation(this, new Double2D(position));
-        this.lastMovements.add(new Double2D(this.position));
+        Double2D newLocation = new Double2D(position);
+
+        if (startingPoint.distance(newLocation) == 0){
+            LOG.info("Stopped Agent: " + this);
+            steps.forEach(step -> step.stop());
+        }
+
+        sim.space.setObjectLocation(this, newLocation);
+        this.lastMovements.add(newLocation);
         this.velocity.setTo(0.0,0.0);
     }
 
+    public AgentPosition getPosition(){
+        return new AgentPosition(this.position);
+    }
 
 //    @Override
 //    public void stepUpdateRadiation() {

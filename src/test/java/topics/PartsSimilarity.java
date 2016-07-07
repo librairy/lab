@@ -76,13 +76,15 @@ public class PartsSimilarity {
     @Test
     public void calculate(){
 
+        LOG.info("Ready to calculate similarities..");
         setup();
 
         String domainUri = "http://drinventor.eu/domains/4f56ab24bb6d815a48b8968a3b157470";
 
+        LOG.info("Getting parts from domain: " + domainUri);
         List<String> parts = udm.find(Resource.Type.PART).from(Resource.Type.DOMAIN, domainUri);
 
-
+        LOG.info("Combining pairs of parts..");
         calculateSimilaritiesBetweenParts(parts,domainUri);
 
     }
