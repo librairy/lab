@@ -16,15 +16,13 @@
 package lab.ma.domain;
 
 import lab.ma.Environment;
-import lab.ma.distance.CommonWordsDistance;
 import lab.ma.distance.KendallDistance;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sim.engine.Stoppable;
-import sim.util.Bag;
-import sim.util.Double2D;
-import sim.util.MutableDouble2D;
+import lab.ma.mason.sim.engine.Stoppable;
+import lab.ma.mason.sim.util.Bag;
+import lab.ma.mason.sim.util.Double2D;
+import lab.ma.mason.sim.util.MutableDouble2D;
 
 import java.awt.*;
 import java.math.RoundingMode;
@@ -92,10 +90,13 @@ public class TopicAgent extends Agent {
 
                 if ((agent.id.equals(this.id))) continue;
 
-                //force = calculateDisplacementBy(agent.position, commonBtw(weightedWords,((TopicAgent) agent).weightedWords)*distance(agent.position, this.position));
-                //double force = -1/distance(agent.position, this.position);
+                //force = calculateDisplacementBy(agent.position, commonBtw(weightedWords,((TopicAgent) agent).weightedWords)*ma.distance(agent.position, this.position));
+                //double force = -1/ma.distance(agent.position, this.position);
                 double force = calculateForceFrom((TopicAgent) agent);
-//                if (force == 0.0) LOG.info("NO REPULSION");
+                if (force == 0.0) {
+//                    LOG.info("NO REPULSION");
+                    continue;
+                }
                 relativeDisplacement = calculateDisplacementBy(agent.position, force);
                 displacement.addIn(relativeDisplacement);
             }
@@ -125,12 +126,13 @@ public class TopicAgent extends Agent {
 
         double distance     = agent.distance(agent.position,this.position);
 
-        double attraction   = Math.max(sim.minForce,correlation);
+        //double attraction   = Math.max(sim.minForce,correlation);
+        double attraction   = correlation;
         double repulsion    = 1 - correlation;
 
-        //double attractiveForce  = Math.max(minForce, attraction / distance);
+        //double attractiveForce  = Math.max(minForce, attraction / ma.distance);
         double attractiveForce  = attraction / distance;
-        double repulsiveForce   = repulsion / (Math.pow(distance,2.0));
+        double repulsiveForce   = repulsion / (Math.pow(distance,2));
 
         double force = attractiveForce - repulsiveForce;
         return Double.valueOf(df.format(force));
@@ -146,9 +148,26 @@ public class TopicAgent extends Agent {
             // Move
             position.addIn(velocity);
 
-            // Adjust to toroidal space
-            this.position.x = sim.space.stx(position.x);
-            this.position.y = sim.space.sty(position.y);
+            if (TOROIDAL){
+                // Adjust to toroidal space
+                this.position.x = sim.space.stx(position.x);
+                this.position.y = sim.space.sty(position.y);
+            }else{
+                if (this.position.x > sim.width){
+                    double w1 = this.position.x - sim.width;
+                    this.position.x = this.position.x - (2*w1);
+                }
+                if (this.position.y > sim.height){
+                    double w1 = this.position.y - sim.height;
+                    this.position.y = this.position.y - (2*w1);
+                }
+                if (this.position.y < 0){
+                    this.position.y = Math.abs(this.position.y);
+                }
+                if (this.position.x < 0){
+                    this.position.x = Math.abs(this.position.x);
+                }
+            }
 
 
             // Avoid collision moving backward
@@ -163,11 +182,11 @@ public class TopicAgent extends Agent {
 
 
 
-        // Maintain a maximum distance to radioactive particle:: Gas Particle Model
-        //double distance = (this.source != null)? distance(this.position, this.source.position) : 0.0 ;
-//        if ((distance > sim.radiationRadius)
-//                && (distance > sim.radiationRadius*this.source.attached)
-//                && (distance < (this.source.attached*sim.radiationRadius+sim.getMaxVelocity()))
+        // Maintain a maximum ma.distance to radioactive particle:: Gas Particle Model
+        //double ma.distance = (this.source != null)? ma.distance(this.position, this.source.position) : 0.0 ;
+//        if ((ma.distance > sim.radiationRadius)
+//                && (ma.distance > sim.radiationRadius*this.source.attached)
+//                && (ma.distance < (this.source.attached*sim.radiationRadius+sim.getMaxVelocity()))
 //                && (source.velocity.length() <= 0.0)
 //                ){
 //            // undo movement
@@ -181,6 +200,7 @@ public class TopicAgent extends Agent {
 
         Double2D newLocation = new Double2D(position);
 
+        //TODO Last 10 movements
         if (startingPoint.distance(newLocation) == 0){
             LOG.info("Stopped Agent: " + this);
             steps.forEach(step -> step.stop());

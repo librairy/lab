@@ -57,7 +57,7 @@ public class TermsCSV {
 
         LOG.info("Ready to build a summary");
 
-        FileWriter writer = new FileWriter("target/terms.csv");
+        FileWriter writer = new FileWriter("terms.csv");
         String separator = ";";
 
         writer.write(

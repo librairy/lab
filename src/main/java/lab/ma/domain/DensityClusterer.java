@@ -6,7 +6,7 @@ import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sim.util.Double2D;
+import lab.ma.mason.sim.util.Double2D;
 
 import java.util.Arrays;
 import java.util.List;

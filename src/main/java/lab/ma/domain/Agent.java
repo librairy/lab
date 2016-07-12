@@ -20,8 +20,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sim.util.Double2D;
-import sim.util.MutableDouble2D;
+import lab.ma.mason.sim.util.Double2D;
+import lab.ma.mason.sim.util.MutableDouble2D;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -113,10 +113,16 @@ public abstract class Agent {
     protected MutableDouble2D randomMovement(){
         return limitToMaxVelocity(
                 new MutableDouble2D(
-                        (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
-                        (sim.random.nextDouble() * sim.height) - (sim.height * 0.5)
+                        (sim.width * 0.5 + sim.random.nextDouble()- 0.5) - (sim.width * 0.5 ),
+                        (sim.height * 0.5 + sim.random.nextDouble() - 0.5) - ((sim.height * 0.5 ))
                 ), sim.getMaxVelocity()
         );
+//        return limitToMaxVelocity(
+//                new MutableDouble2D(
+//                        (sim.random.nextDouble() * sim.width) - (sim.width * 0.5),
+//                        (sim.random.nextDouble() * sim.height) - (sim.height * 0.5)
+//                ), sim.getMaxVelocity()
+//        );
     }
 
     protected Double2D calculateDisplacementBy(MutableDouble2D position, double multiplier){

@@ -15,20 +15,25 @@
 
 package lab.ma;
 
+import com.google.common.collect.ImmutableMap;
 import lab.ma.domain.Agent;
+import lab.ma.domain.WordsDistribution;
 import org.librairy.storage.UDM;
 import org.springframework.beans.factory.annotation.Autowired;
-import sim.display.Controller;
-import sim.display.Display2D;
-import sim.display.GUIState;
-import sim.engine.SimState;
-import sim.portrayal.DrawInfo2D;
-import sim.portrayal.continuous.ContinuousPortrayal2D;
-import sim.portrayal.simple.OvalPortrayal2D;
+import lab.ma.mason.sim.display.Controller;
+import lab.ma.mason.sim.display.Display2D;
+import lab.ma.mason.sim.display.GUIState;
+import lab.ma.mason.sim.engine.SimState;
+import lab.ma.mason.sim.portrayal.DrawInfo2D;
+import lab.ma.mason.sim.portrayal.continuous.ContinuousPortrayal2D;
+import lab.ma.mason.sim.portrayal.simple.OvalPortrayal2D;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by cbadenes on 05/12/14.
@@ -46,9 +51,9 @@ public class EnvironmentGUI extends GUIState {
     private static final int dimension = 950; // 750
 
 
-    public EnvironmentGUI()
+    public EnvironmentGUI(List<String> vocabulary, List<WordsDistribution> words)
     {
-        super(new Environment(System.currentTimeMillis()));
+        super(new Environment(vocabulary,words));
     }
 
     public EnvironmentGUI(SimState state) {
@@ -60,10 +65,9 @@ public class EnvironmentGUI extends GUIState {
         return "Content-based Self-Organization";
     }
 
-    public Object getSimulationInspectedObject() {
+    public SimState getSimulationInspectedObject() {
         return state; // non-volatile
     }
-
 
     public void start()
     {
@@ -160,6 +164,16 @@ public class EnvironmentGUI extends GUIState {
 
     public static void main(String[] args)
     {
-        new EnvironmentGUI().createController();  // randomizes by currentTimeMillis
+        List<WordsDistribution> topics = Arrays.asList(new WordsDistribution[]{
+                new WordsDistribution("t1", ImmutableMap.of("a",0.7,"b",0.5,"c",0.3)),
+                new WordsDistribution("t2",ImmutableMap.of("e",0.8,"b",0.4,"c",0.1)),
+                new WordsDistribution("t3",ImmutableMap.of("f",0.6,"g",0.5,"h",0.4)),
+                new WordsDistribution("t4",ImmutableMap.of("i",0.9,"j",0.3,"k",0.2))
+        });
+
+        List<String> vocab = topics.stream().flatMap(topic -> topic.getWords().keySet().stream()).distinct().collect
+                (Collectors.toList());
+
+        new EnvironmentGUI(vocab,topics).createController();  // randomizes by currentTimeMillis
     }
 }

@@ -54,7 +54,7 @@ public class DocumentsCSV {
 
         LOG.info("Ready to build a summary");
 
-        FileWriter writer = new FileWriter("target/repository-documents.csv");
+        FileWriter writer = new FileWriter("repository-documents.csv");
         String separator = ";";
 
         writer.write(

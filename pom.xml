@@ -59,6 +59,16 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.png</include>
+                    <include>**/*.classes</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
 
             <!-- Maven Test Plugin -->
@@ -181,12 +191,36 @@
             <classifier>lib</classifier>
         </dependency>
 
-        <!-- multi-agents -->
+        <!-- multi-agents MASON-->
+        <!--<dependency>-->
+            <!--<groupId>mason</groupId>-->
+            <!--<artifactId>mason</artifactId>-->
+            <!--<version>18</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>mason</groupId>
-            <artifactId>mason</artifactId>
-            <version>18</version>
+            <groupId>javax.vecmath</groupId>
+            <artifactId>vecmath</artifactId>
+            <version>1.5.2</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.media/jmf -->
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jmf</artifactId>
+            <version>2.1.1e</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.19</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.lowagie/itext -->
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+
+        <!-- Clustering -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>

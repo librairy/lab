@@ -14,9 +14,10 @@
  */
 package lab.ma;
 
-import com.google.common.collect.ImmutableMap;
 import lab.ma.domain.Agent;
 import lab.ma.domain.TopicAgent;
+import lab.ma.domain.WordsDistribution;
+import lab.ma.mason.sim.engine.*;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -24,12 +25,10 @@ import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.librairy.storage.UDM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sim.engine.*;
-import sim.field.continuous.Continuous2D;
-import sim.util.MutableDouble2D;
+import lab.ma.mason.sim.field.continuous.Continuous2D;
+import lab.ma.mason.sim.util.MutableDouble2D;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,12 +39,18 @@ public class Environment extends SimState {
 
     private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
 
-    public double width             = 20.0;      // 20.0
-    public double height            = width;      // 7.0
-    //public double agentRadius       = 0.06;     // 0.06
-    public double agentRadius       = 0.1;     // 0.06
 
-    public double minForce          = 0.05;
+    public double width             = 10.0;      // 20.0
+    public double height            = width;      // 7.0
+    public double agentRadius       = 0.1;     // 0.06
+    public double minForce          = 0.01;  // 0.05
+//    private double range            = agentRadius*10;  // 0.8, 3.5
+    //private double range            = width;  // 0.8, 3.5
+    private double range              =   Math.sqrt(1/minForce)*2;
+    private double maxVelocity      = agentRadius/2;     // 0.06
+    private int movementHistory     = 3;
+
+
 
     public MutableDouble2D center = new MutableDouble2D(width/2,height/2);
 
@@ -53,19 +58,9 @@ public class Environment extends SimState {
     public Continuous2D area;
 
     public TopicAgent[] topicAgents;
+    private List<WordsDistribution> topics;
 
-    public static final List<String> vocabulary = Arrays.asList(new String[]{"a","b","c","d","e","f","g","h","i","j",
-            "k","l", "m","n"});
-
-
-//    private double range            = agentRadius*10;  // 0.8, 3.5
-    //private double range            = width;  // 0.8, 3.5
-    private double range              =   Math.sqrt(1/minForce)*2;
-
-
-    private double maxVelocity      = agentRadius/2;     // 0.06
-
-    private int movementHistory     = 3;
+    public static List<String> vocabulary;
 
     // Properties
     public double getRange() {
@@ -89,12 +84,34 @@ public class Environment extends SimState {
 
     private UDM udm;
 
-    public Environment(long seed) {
-        super(seed);
+    public Environment(List<String> vocabulary, List<WordsDistribution> topics) {
+        super(System.currentTimeMillis());
+        initialize(topics.size());
+        this.topics     = topics;
+        this.vocabulary = vocabulary;
     }
 
-    public Environment() {
-        super(System.currentTimeMillis());
+    private void initialize(int seed){
+        agentRadius = 0.1;
+        movementHistory = 10;
+        //maxVelocity = agentRadius/2;
+        maxVelocity = agentRadius;
+        minForce    = maxVelocity;
+//        range       = Math.sqrt(1/minForce)*2;
+        range       = Math.sqrt(1.0/Double.valueOf(seed))*2.0;
+
+        LOG.info("Range :" + range);
+
+        Double alpha        = 360.0/seed/2.0;
+        Double sinAlpha     = Math.sin(Math.toRadians(alpha));
+
+        width       = (range/2.0)/sinAlpha + range*10;
+//        width       = (range/2.0)/sinAlpha ;
+        height      = width;
+
+        LOG.info("Dimension :" + width + "x"+ height);
+
+
     }
 
     public void setUdm(UDM udm){
@@ -123,7 +140,6 @@ public class Environment extends SimState {
         });
         agent.add(s3);
 
-
         return agent;
     }
 
@@ -133,70 +149,22 @@ public class Environment extends SimState {
         space = new Continuous2D(0.01, width, height);
         area  = new Continuous2D(0.04, width, height); // radioactive particles
 
-        // Stop condition
+        int numTopics = topics.size();
+        LOG.info("Initial Number of Topics: " + numTopics);
 
-        addToAsynchronousRegistry(new StopCondition());
-
-
-
-
-        LOG.info("reading relations to topic...");
-
-        HashMap<String,TopicAgent> topics       = new HashMap<String, TopicAgent>();
-        topics.put("t1",new TopicAgent(this, "t1", ImmutableMap.of("a",0.7,"b",0.5,"c",0.3)));
-
-        topics.put("t2",new TopicAgent(this, "t2", ImmutableMap.of("e",0.8,"b",0.4,"c",0.1)));
-
-        topics.put("t3",new TopicAgent(this, "t3", ImmutableMap.of("f",0.6,"g",0.5,"h",0.4)));
-
-        topics.put("t4",new TopicAgent(this, "t4", ImmutableMap.of("i",0.9,"j",0.3,"k",0.2)));
-
-
-
-
-
-//        DocumentAgent documentAgent = new DocumentAgent(this, "d1");
-//        documentAgent.addWeight("t1",0.5);
-//        documentAgent.addWeight("t2",0.5);
-//        documents.put("d1",documentAgent);
-//
-//        DocumentAgent documentAgent2 = new DocumentAgent(this, "d2");
-//        documentAgent2.addWeight("t1",0.8);
-//        documentAgent2.addWeight("t2",0.2);
-//        documents.put("d2",documentAgent2);
-//
-//        DocumentAgent documentAgent3 = new DocumentAgent(this, "d3");
-//        documentAgent3.addWeight("t1",0.2);
-//        documentAgent3.addWeight("t2",0.8);
-//        documents.put("d3",documentAgent3);
-
-
-        int numTopics = topics.keySet().size();
-//        int numDocuments = documents.keySet().size();
-
-        LOG.info("NumTopics: " + numTopics);
-//        LOG.info("NumDocuments: " + numDocuments);
 
         int index = 0;
         topicAgents = new TopicAgent[numTopics];
-        for (String key: topics.keySet()){
-            LOG.info("added topic: " + topics.get(key));
-            topicAgents[index++] = (TopicAgent) initializeParticle(topics.get(key));
+        for (WordsDistribution topic: topics){
+            LOG.info("adding topic: " + topic);
+            topicAgents[index++] = (TopicAgent) initializeParticle(new TopicAgent(this,topic.getId(),topic.getWords()));
         }
-
-//        index = 0;
-//        textAgents = new TextAgent[numDocuments];
-//        for (String key: documents.keySet()){
-//            LOG.info("added document: " + documents.get(key));
-//            textAgents[index++] = (TextAgent) initializeParticle(documents.get(key));
-//        }
-
 
     }
 
 
     public void build(){
-        System.setSecurityManager(new MySecurityManager());
+//        System.setSecurityManager(new MySecurityManager());
         Environment environment = this;
         try{
             doLoop(new MakesSimState() {
@@ -232,16 +200,6 @@ public class Environment extends SimState {
             LOG.info("> Points: "+cluster.getPoints());
         });
 
-
-
-    }
-
-
-    public static void main(String[] args) throws InterruptedException {
-
-        Environment environment = new Environment();
-        environment.build();
-        environment.cluster();
     }
 
 }

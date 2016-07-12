@@ -1,8 +1,8 @@
 package lab.ma.domain;
 
 import org.apache.commons.math3.ml.clustering.Clusterable;
-import sim.util.Double2D;
-import sim.util.MutableDouble2D;
+import lab.ma.mason.sim.util.Double2D;
+import lab.ma.mason.sim.util.MutableDouble2D;
 
 /**
  * Created on 07/07/16:
