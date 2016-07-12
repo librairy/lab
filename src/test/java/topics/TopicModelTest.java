@@ -110,9 +110,21 @@ public class TopicModelTest {
 
 
     @Test
-    public void checkText(){
+    public void findSimilarDocs(){
 
         String domainURI = "http://drinventor.eu/domains/4f56ab24bb6d815a48b8968a3b157470";
+
+        String input = "This paper presents an approach to representing decaying organic life, by\n" +
+                "animating shapes and textures. It focuses on a lily, decaying rapidly, in a time-lapse\n" +
+                "manner. The process is based on first-hand observation and is entirely\n" +
+                "procedural. As for the texture animation, it is created\n" +
+                "primarily from three texture maps generated from a node base graph\n" +
+                "allowing the animation of\n" +
+                "base parameters. Artistic endeavours are also considered to broaden the\n" +
+                "reach of the project. new skin deformation method to create dynamic skin deformations in this\n" +
+                "paper. The core elements of our approach are a dynamic deformation model,\n" +
+                "an efficient data-driven finite difference solution, and a curve-based\n" +
+                "representation of 3D models";
 
 
         SparkHelper sparkHelper = new SparkHelper();
@@ -128,29 +140,6 @@ public class TopicModelTest {
         CountVectorizerModel cvModel = CountVectorizerModel.load("out/vocabulary");
         Tuple2<Object, Vector> tuple = new Tuple2<Object,Vector>(0l, Vectors.dense(new double[]{1.0}));
 
-        // Input Data Frame
-//        String input = "Lastly, other types of joints, such as finger joints, almost immediately produce contact " +
-//                "surfaces between neigh- boring skin parts, surrounded by muscular bulges (Figure 1(d,e)). This is " +
-//                "best modeled using a gradient-based bulge-in-contact oper- ator as proposed in [Gourmel et al. 2013]" +
-//                ". This operator allows the interpolation between a union and a contact surface surrounded by a " +
-//                "bulge, giving an organic look to the resulting shape by localizing the bulge around contacts only. " +
-//                "As for the gradient-based blend- ing operator, choosing specific values for θ allows us to tune the " +
-//                "bulging behavior when a joint bends: to avoid the unwanted bulge at the joint in the rest pose, we " +
-//                "set θ(0) = θu (union); we then slowly inflate the bulge up to its maximum when the bones are or- " +
-//                "thogonal (α = π/2), and keep it maximal for larger angles, by setting θ(α) = θc (bulge in contact) ," +
-//                " ∀α ∈ [π/2, π], as plotted in\n" +
-//                "Figure 7(b).";
-        String input = "This paper presents an approach to representing decaying organic life, by\n" +
-                "animating shapes and textures. It focuses on a lily, decaying rapidly, in a time-lapse\n" +
-                "manner. The process is based on first-hand observation and is entirely\n" +
-                "procedural. As for the texture animation, it is created\n" +
-                "primarily from three texture maps generated from a node base graph\n" +
-                "allowing the animation of\n" +
-                "base parameters. Artistic endeavours are also considered to broaden the\n" +
-                "reach of the project. new skin deformation method to create dynamic skin deformations in this\n" +
-                "paper. The core elements of our approach are a dynamic deformation model,\n" +
-                "an efficient data-driven finite difference solution, and a curve-based\n" +
-                "representation of 3D models";
         List<Row> inputRows = Arrays.asList(new Row[]{RowFactory.create("test-uri", input)});
         DataFrame inputDF = ldaBuilder.preprocess(inputRows);
         RDD<Tuple2<Object, Vector>> inputDocs = cvModel.transform(inputDF)
