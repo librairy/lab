@@ -1,4 +1,11 @@
 /*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+/*
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,6 +31,8 @@ import lab.ma.mason.sim.util.Double2D;
 import lab.ma.mason.sim.util.MutableDouble2D;
 
 import java.awt.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -43,8 +52,6 @@ public abstract class Agent {
 
     private final Type type;
     protected CircularFifoQueue lastMovements;
-
-    protected static final boolean TOROIDAL = false;
 
     protected MutableDouble2D position = new MutableDouble2D();
     protected MutableDouble2D velocity = new MutableDouble2D();
@@ -96,7 +103,7 @@ public abstract class Agent {
 
     protected double distance (MutableDouble2D p1, MutableDouble2D p2){
         // Handle toroidal space
-        return TOROIDAL? toroidalDistance(p1,p2) : euclideanDistance(p1,p2);
+        return Environment.TOROIDAL? toroidalDistance(p1,p2) : euclideanDistance(p1,p2);
     }
 
 
@@ -126,7 +133,9 @@ public abstract class Agent {
     }
 
     protected Double2D calculateDisplacementBy(MutableDouble2D position, double multiplier){
-        return TOROIDAL? calculateToroidalDisplacementBy(position,multiplier) : calculateEuclideanDisplacementBy(position,multiplier);
+        return Environment.TOROIDAL? calculateToroidalDisplacementBy(position,multiplier) : calculateEuclideanDisplacementBy
+                (position,
+                multiplier);
 //        return calculateToroidalDisplacementBy(position,multiplier);
     }
 
@@ -135,7 +144,19 @@ public abstract class Agent {
         double y1 = this.position.y;
         double x2 = position.x;
         double y2 = position.y;
-        return new Double2D(force * (x2-x1), force * (y2-y1));
+        Double2D value = new Double2D(force * (x2 - x1), force * (y2 - y1));
+        Double2D roundValue = new Double2D(round(value.x,Environment.ROUND_DECIMAL),round(value.y,Environment.ROUND_DECIMAL));
+        return value;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        double doubleValue = bd.doubleValue();
+        double aux = (value < 0.0) ? -doubleValue : doubleValue;
+        return doubleValue;
     }
 
     protected Double2D calculateToroidalDisplacementBy(MutableDouble2D position, double force){
@@ -150,14 +171,15 @@ public abstract class Agent {
     }
 
     protected boolean moveFrom(MutableDouble2D current, double distance){
-        if (!this.lastMovements.isEmpty()){
-            Iterator iterator = this.lastMovements.iterator();
-            while(iterator.hasNext()){
-                Double2D point = (Double2D) iterator.next();
-                if (distance(new MutableDouble2D(point), current) < distance) return false;
-            }
+        if (this.lastMovements.isEmpty()) return true;
+
+        Iterator iterator = this.lastMovements.iterator();
+        while(iterator.hasNext()){
+            Double2D point = (Double2D) iterator.next();
+            if (distance(new MutableDouble2D(point), current) > distance) return true;
         }
-        return true;
+
+        return false;
     }
 
     public static double commonBtw(List<String> l1, List<String> l2){

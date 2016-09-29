@@ -1,18 +1,24 @@
-package ma;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+package lab.ma;
 
 import com.google.common.collect.ImmutableMap;
 import es.cbadenes.lab.test.IntegrationTest;
 import lab.BootConfig;
-import lab.ma.Environment;
-import lab.ma.EnvironmentGUI;
 import lab.ma.domain.WordsDistribution;
 import org.apache.spark.mllib.clustering.LDAModel;
-import org.apache.spark.mllib.clustering.LocalLDAModel;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.librairy.modeler.lda.builder.OnlineLDABuilder;
-import org.librairy.modeler.lda.helper.SparkHelper;
+import org.librairy.computing.helper.SparkHelper;
+import org.librairy.model.domain.resources.Resource;
+import org.librairy.modeler.lda.builder.CorpusBuilder;
+import org.librairy.modeler.lda.builder.LDABuilder;
 import org.librairy.modeler.lda.models.Corpus;
 import org.librairy.storage.UDM;
 import org.librairy.storage.generator.URIGenerator;
@@ -25,7 +31,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import scala.Tuple2;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,6 +75,17 @@ public class RealTopicsMA {
     @Autowired
     UnifiedColumnRepository columnRepository;
 
+    @Autowired
+    SparkHelper sparkHelper;
+
+    @Autowired
+    LDABuilder topicBuilder;
+
+    @Autowired
+    CorpusBuilder corpusBuilder;
+
+
+
     private void simulate(List<String> vocab, List<WordsDistribution> topics ){
         Environment environment = new Environment(vocab,topics);
         environment.build();
@@ -93,40 +109,13 @@ public class RealTopicsMA {
     @Test
     public void real(){
 
-        OnlineLDABuilder topicBuilder = new OnlineLDABuilder();
-        topicBuilder.setColumnRepository(columnRepository);
-        topicBuilder.setUriGenerator(new URIGenerator());
-        topicBuilder.setFileSystemEndpoint("target/");
-        topicBuilder.setUdm(udm);
-
-        SparkHelper sparkHelper = new SparkHelper();
-        sparkHelper.setMemory("2g");
-        sparkHelper.setThreads("4");
-        sparkHelper.setup();
-        topicBuilder.setSparkHelper(sparkHelper);
-
         String domainUri = "http://drinventor.eu/domains/4f56ab24bb6d815a48b8968a3b157470";
 
         Integer vocabSize = 10000;
 
-        Corpus corpus = topicBuilder.createCorpus(domainUri, vocabSize);
+        Corpus corpus = corpusBuilder.build(domainUri, Resource.Type.ITEM);
 
-        int k           = 100;
-        int iterations  = 10;
-        double alpha    = -1.0;
-        double beta     = -1.0;
-        LDAModel ldaModel = topicBuilder.trainModel(k, iterations, alpha, beta, corpus.getDocuments());
-        LocalLDAModel localLDAModel = (LocalLDAModel) ldaModel;
-
-        double likelihood = localLDAModel.logLikelihood(corpus.getDocuments());
-        LOG.info("Likelihood: " + likelihood);
-
-        List<WordsDistribution> topics = retrieveTopics(ldaModel, corpus.getModel().vocabulary(),10);
-
-        List<String> vocabulary = Arrays.asList(corpus.getModel().vocabulary());
-
-        simulate(vocabulary,topics);
-
+        topicBuilder.build(corpus);
 
     }
 

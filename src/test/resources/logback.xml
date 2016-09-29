@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2016. Universidad Politecnica de Madrid
+  ~
+  ~ @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+  ~
+  -->
+
 <configuration scan="true" scanPeriod="30 seconds">
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -12,7 +19,6 @@
     <logger name="es.upm" level="INFO"/>
 
     <logger name="lab" level="INFO"/>
-    <logger name="topics" level="INFO"/>
 
     <root level="ERROR">
         <appender-ref ref="STDOUT" />

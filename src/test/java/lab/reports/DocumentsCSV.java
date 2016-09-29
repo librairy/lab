@@ -1,4 +1,11 @@
-package reports;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+package lab.reports;
 
 import com.google.common.base.Strings;
 import lab.BootConfig;
@@ -32,13 +39,12 @@ import java.util.Optional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = BootConfig.class)
 @TestPropertySource(properties = {
-        "librairy.cassandra.contactpoints = wiener.dia.fi.upm.es",
-        "librairy.cassandra.port = 5011",
-        "librairy.cassandra.keyspace = research",
-        "librairy.elasticsearch.contactpoints = wiener.dia.fi.upm.es",
-        "librairy.elasticsearch.port = 5021",
-        "librairy.neo4j.contactpoints = wiener.dia.fi.upm.es",
-        "librairy.neo4j.port = 5030",
+        "librairy.columndb.host = wiener.dia.fi.upm.es",
+        "librairy.columndb.port = 5011",
+        "librairy.documentdb.host = wiener.dia.fi.upm.es",
+        "librairy.documentdb.port = 5021",
+        "librairy.graphdb.host= wiener.dia.fi.upm.es",
+        "librairy.graphdb.port = 5030",
         "librairy.eventbus.host = wiener.dia.fi.upm.es",
         "librairy.eventbus.port = 5041",
 })
@@ -59,7 +65,7 @@ public class DocumentsCSV {
 
         writer.write(
                 "title"+separator+
-                "year"+separator+
+//                "year"+separator+
                 "document"+separator+
                 "background"+separator+
                 "challenge"+separator+
@@ -71,7 +77,7 @@ public class DocumentsCSV {
         udm.find(Resource.Type.DOCUMENT)
                 .all()
                 .stream()
-                .map(uri -> udm.read(Resource.Type.DOCUMENT).byUri(uri).get().asDocument())
+                .map(res -> udm.read(Resource.Type.DOCUMENT).byUri(res.getUri()).get().asDocument())
                 .forEach(document -> {
                     try {
 
@@ -84,12 +90,12 @@ public class DocumentsCSV {
 
                         String title = document.getTitle().replace(";",":").replace("\"","");
 
-                        List<String> parts = udm.find(Resource.Type.PART).from(Resource.Type.DOCUMENT, docUri);
+                        List<Resource> parts = udm.find(Resource.Type.PART).from(Resource.Type.DOCUMENT, docUri);
 
                         Map<String,String> partRecord = new HashMap<>();
 
-                        parts.forEach(uri -> {
-                            Optional<Resource> partRes = udm.read(Resource.Type.PART).byUri(uri);
+                        parts.forEach(res -> {
+                            Optional<Resource> partRes = udm.read(Resource.Type.PART).byUri(res.getUri());
                             if (partRes.isPresent()){
                                 Part part = partRes.get().asPart();
                                 String pUri     = part.getUri();
@@ -106,7 +112,7 @@ public class DocumentsCSV {
 
                         StringBuilder row = new StringBuilder()
                                 .append(title.length()>100? title.substring(0,100) : title).append(separator)
-                                .append(year).append(separator)
+//                                .append(year).append(separator)
                                 .append(docUri).append(separator)
                                 .append(partRecord.get("background")).append(separator)
                                 .append(partRecord.get("challenge")).append(separator)

@@ -1,4 +1,11 @@
 /*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+/*
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,6 +46,7 @@ public class Environment extends SimState {
 
     private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
 
+    public static final boolean TOROIDAL = false;
 
     public double width             = 10.0;      // 20.0
     public double height            = width;      // 7.0
@@ -46,9 +54,15 @@ public class Environment extends SimState {
     public double minForce          = 0.01;  // 0.05
 //    private double range            = agentRadius*10;  // 0.8, 3.5
     //private double range            = width;  // 0.8, 3.5
-    private double range              =   Math.sqrt(1/minForce)*2;
-    private double maxVelocity      = agentRadius/2;     // 0.06
-    private int movementHistory     = 3;
+
+    //private double range            =   Math.sqrt(1/minForce)*2;
+    private double range            =   agentRadius*20;
+
+    private double maxVelocity      = agentRadius/5;     // 0.06
+    public int maxIterations        = 100000;
+    private int movementHistory     = 5;
+
+    public static int ROUND_DECIMAL = 1;
 
 
 
@@ -86,9 +100,12 @@ public class Environment extends SimState {
 
     public Environment(List<String> vocabulary, List<WordsDistribution> topics) {
         super(System.currentTimeMillis());
-        initialize(topics.size());
+//        initialize(topics.size());
         this.topics     = topics;
         this.vocabulary = vocabulary;
+
+        LOG.info("Dimension :" + width + "x"+ height);
+        LOG.info("Range :" + range);
     }
 
     private void initialize(int seed){
@@ -100,7 +117,6 @@ public class Environment extends SimState {
 //        range       = Math.sqrt(1/minForce)*2;
         range       = Math.sqrt(1.0/Double.valueOf(seed))*2.0;
 
-        LOG.info("Range :" + range);
 
         Double alpha        = 360.0/seed/2.0;
         Double sinAlpha     = Math.sin(Math.toRadians(alpha));
@@ -109,7 +125,6 @@ public class Environment extends SimState {
 //        width       = (range/2.0)/sinAlpha ;
         height      = width;
 
-        LOG.info("Dimension :" + width + "x"+ height);
 
 
     }
@@ -146,8 +161,10 @@ public class Environment extends SimState {
     public void start() {
         super.start();
 
-        space = new Continuous2D(0.01, width, height);
-        area  = new Continuous2D(0.04, width, height); // radioactive particles
+        //space = new Continuous2D(0.01, width, height);
+        space = new Continuous2D(0.1, width, height);
+        //area  = new Continuous2D(0.04, width, height); // radioactive particles
+        area  = new Continuous2D(0.1, width, height);
 
         int numTopics = topics.size();
         LOG.info("Initial Number of Topics: " + numTopics);
@@ -186,7 +203,8 @@ public class Environment extends SimState {
         List<Clusterable> points = Arrays.stream(topicAgents).map(topic -> topic.getPosition()).collect(Collectors.toList());
 
         int minPts = 0;
-        double eps = range/2;
+        //double eps = range/2;
+        double eps = agentRadius*3;
         LOG.info("MinPts:" + minPts + " | EPS:" + eps);
         DBSCANClusterer clusterer = new DBSCANClusterer(eps,minPts, new EuclideanDistance());
 

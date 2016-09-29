@@ -1,4 +1,11 @@
-package searches;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+package lab.search;
 
 import com.google.common.base.Strings;
 import es.cbadenes.lab.test.IntegrationTest;
@@ -8,7 +15,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.librairy.model.domain.relations.Relation;
 import org.librairy.model.domain.resources.Document;
-import org.librairy.model.domain.resources.Part;
 import org.librairy.model.domain.resources.Resource;
 import org.librairy.storage.UDM;
 import org.slf4j.Logger;
@@ -19,7 +25,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import scala.Tuple2;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 

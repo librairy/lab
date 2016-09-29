@@ -1,33 +1,21 @@
-package ma;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
 
-import com.google.common.collect.ImmutableMap;
+package lab.ma;
+
 import es.cbadenes.lab.test.IntegrationTest;
-import lab.BootConfig;
-import lab.ma.Environment;
-import lab.ma.EnvironmentGUI;
 import lab.ma.domain.WordsDistribution;
-import org.apache.spark.mllib.clustering.LDAModel;
-import org.apache.spark.mllib.clustering.LocalLDAModel;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.librairy.modeler.lda.builder.OnlineLDABuilder;
-import org.librairy.modeler.lda.helper.SparkHelper;
-import org.librairy.modeler.lda.models.Corpus;
-import org.librairy.storage.UDM;
-import org.librairy.storage.generator.URIGenerator;
-import org.librairy.storage.system.column.repository.UnifiedColumnRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import scala.Tuple2;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,8 +50,8 @@ public class NearRealTopicsMA {
     }
 
 
-    @Test
-    public void fromCSV() throws FileNotFoundException {
+
+    public List<WordsDistribution> readCSV() throws FileNotFoundException {
         InputStream is = new FileInputStream(new File("src/main/resources/topic100.csv"));
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
@@ -81,15 +69,30 @@ public class NearRealTopicsMA {
             t.add(values[17],Double.valueOf(values[18]));
             t.add(values[19],Double.valueOf(values[20]));
             return t;
-        }).limit(25).collect(Collectors.toList());
+        }).limit(100).collect(Collectors.toList());
 
-        List<String> vocabulary = topics.stream().flatMap(topic -> topic.getWords().keySet().stream()).distinct().collect
-                (Collectors.toList());
+
+//        topics.addAll(topics);
+
+        return topics;
+    }
+
+    @Test
+    public void fromCSVGUI() throws FileNotFoundException {
+
+        List<WordsDistribution> topics = readCSV();
+        List<String> vocabulary = topics.stream().flatMap(topic -> topic.getWords().keySet().stream()).distinct().collect(Collectors.toList());
 
         simulateGUI(vocabulary,topics);
+    }
 
+    @Test
+    public void fromCSV() throws FileNotFoundException {
 
+        List<WordsDistribution> topics = readCSV();
+        List<String> vocabulary = topics.stream().flatMap(topic -> topic.getWords().keySet().stream()).distinct().collect(Collectors.toList());
 
+        simulate(vocabulary,topics);
     }
 
 }

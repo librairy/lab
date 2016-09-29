@@ -1,4 +1,11 @@
-package fixing;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+package lab.fixing;
 
 import es.cbadenes.lab.test.IntegrationTest;
 import lab.BootConfig;
@@ -12,7 +19,7 @@ import org.librairy.model.domain.relations.Relation;
 import org.librairy.model.domain.relations.Relationship;
 import org.librairy.model.domain.relations.SimilarTo;
 import org.librairy.model.domain.resources.Resource;
-import org.librairy.modeler.lda.models.similarity.RelationalSimilarity;
+import org.librairy.modeler.lda.builder.SimilarityBuilder;
 import org.librairy.storage.UDM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +61,9 @@ public class SimilarityFixer {
     @Autowired
     UDM udm;
 
+    @Autowired
+    SimilarityBuilder similarityBuilder;
+
 
     public void setup(){
         int processors = Runtime.getRuntime().availableProcessors();
@@ -82,37 +92,37 @@ public class SimilarityFixer {
         String domainUri = "http://drinventor.eu/domains/4f56ab24bb6d815a48b8968a3b157470";
 
         LOG.info("Getting parts from domain: " + domainUri);
-        List<String> parts = udm.find(Resource.Type.PART).from(Resource.Type.DOMAIN, domainUri);
+        List<Resource> parts = udm.find(Resource.Type.PART).from(Resource.Type.DOMAIN, domainUri);
 
         LOG.info("Combining pairs of parts..");
         calculateSimilaritiesBetweenParts(parts,domainUri);
 
     }
 
-    private void calculateSimilaritiesBetweenParts(List<String> parts, String domainUri){
+    private void calculateSimilaritiesBetweenParts(List<Resource> parts, String domainUri){
 
 
-        JavaRDD<String> urisRDD = this.sc.parallelize(parts);
+        JavaRDD<Resource> urisRDD = this.sc.parallelize(parts);
 
-        List<Tuple2<String, String>> pairs = urisRDD.cartesian(urisRDD)
-                .filter(x -> x._1().compareTo(x._2()) > 0)
+        List<Tuple2<Resource, Resource>> pairs = urisRDD.cartesian(urisRDD)
+                .filter(x -> x._1().getUri().compareTo(x._2().getUri()) > 0)
                 .collect();
 
         LOG.info("Calculating similarities...");
         pairs.parallelStream().forEach( pair -> {
 
             List<Relationship> p1 = udm.find(Relation.Type.DEALS_WITH_FROM_PART).from(Resource.Type
-                    .PART, pair._1).stream().map(rel -> new Relationship(rel.getEndUri(), rel.getWeight())).collect
+                    .PART, pair._1.getUri()).stream().map(rel -> new Relationship(rel.getEndUri(), rel.getWeight())).collect
                     (Collectors.toList());
             List<Relationship> p2 = udm.find(Relation.Type.DEALS_WITH_FROM_PART).from(Resource.Type
-                    .PART, pair._2).stream().map(rel -> new Relationship(rel.getEndUri(), rel.getWeight())).collect
+                    .PART, pair._2.getUri()).stream().map(rel -> new Relationship(rel.getEndUri(), rel.getWeight())).collect
                     (Collectors.toList());
 
-            Double similarity = RelationalSimilarity.between(p1, p2);
+            Double similarity = similarityBuilder.similarityBetween(p1, p2);
 
             LOG.info("Attaching SIMILAR_TO (PART) based on " + pair);
-            SimilarTo simRel1 = Relation.newSimilarToParts(pair._1, pair._2);
-            SimilarTo simRel2 = Relation.newSimilarToParts(pair._2, pair._1);
+            SimilarTo simRel1 = Relation.newSimilarToParts(pair._1.getUri(), pair._2.getUri(),domainUri);
+            SimilarTo simRel2 = Relation.newSimilarToParts(pair._2.getUri(), pair._1.getUri(),domainUri);
 
             simRel1.setWeight(similarity);
             simRel1.setDomain(domainUri);

@@ -1,6 +1,12 @@
-package ma.distance;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
 
-import lab.ma.distance.KendallDistance;
+package lab.ma.distance;
+
 import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 import org.junit.Test;
 
@@ -23,14 +29,14 @@ public class KendallTests {
         List<String> w3 = Arrays.asList(new String[]{"fuel","gas","humo"});
         List<String> w4 = Arrays.asList(new String[]{"indio","juego","kilo"});
 
-        System.out.println(KendallDistance.correlation(w1,w2));
-        System.out.println(KendallDistance.correlation(w1,w3));
-        System.out.println(KendallDistance.correlation(w1,w4));
+        System.out.println(KendallsTau.correlation(w1,w2));
+        System.out.println(KendallsTau.correlation(w1,w3));
+        System.out.println(KendallsTau.correlation(w1,w4));
 
-        System.out.println(KendallDistance.correlation(w2,w3));
-        System.out.println(KendallDistance.correlation(w2,w4));
+        System.out.println(KendallsTau.correlation(w2,w3));
+        System.out.println(KendallsTau.correlation(w2,w4));
 
-        System.out.println(KendallDistance.correlation(w3,w4));
+        System.out.println(KendallsTau.correlation(w3,w4));
 
     }
 

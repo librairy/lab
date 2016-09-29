@@ -1,8 +1,9 @@
 /*
-  Copyright 2006 by Sean Luke and George Mason University
-  Licensed under the Academic Free License version 3.0
-  See the file "LICENSE" for more information
-*/
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
 
 package lab.ma.mason.sim.portrayal.grid;
 import lab.ma.mason.sim.field.grid.Grid2D;

@@ -1,4 +1,11 @@
-package ma;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+package lab.ma;
 
 import org.junit.Test;
 

@@ -1,6 +1,12 @@
-package reports;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
 
-import com.google.common.base.Strings;
+package lab.reports;
+
 import es.cbadenes.lab.test.IntegrationTest;
 import lab.BootConfig;
 import org.junit.Test;
@@ -8,7 +14,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.librairy.model.domain.relations.AppearedIn;
 import org.librairy.model.domain.relations.Relation;
-import org.librairy.model.domain.resources.Part;
 import org.librairy.model.domain.resources.Resource;
 import org.librairy.model.domain.resources.Term;
 import org.librairy.storage.UDM;
@@ -21,9 +26,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**

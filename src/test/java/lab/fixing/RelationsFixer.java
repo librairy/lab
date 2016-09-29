@@ -1,4 +1,11 @@
-package fixing;
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
+package lab.fixing;
 
 import com.google.common.collect.ImmutableMap;
 import es.cbadenes.lab.test.IntegrationTest;
@@ -109,9 +116,9 @@ public class RelationsFixer {
         Map<Integer,String> sentences = new HashMap<>();
 
         StringBuilder queryWriter = new StringBuilder();
-        udm.find(resourceRef).all().parallelStream().forEach(doc -> {
+        udm.find(resourceRef).all().parallelStream().forEach(res -> {
             Map<String,List<Relation>> deals = new HashMap<String, List<Relation>>();
-            udm.find(relationRef).from(resourceRef, doc).forEach(rel -> {
+            udm.find(relationRef).from(resourceRef, res.getUri()).forEach(rel -> {
                 List<Relation> rels = deals.get(rel.getEndUri());
                 if (rels == null) rels = new ArrayList<Relation>();
                 rels.add(rel);

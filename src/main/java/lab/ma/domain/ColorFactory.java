@@ -1,11 +1,22 @@
+/*
+ * Copyright (c) 2016. Universidad Politecnica de Madrid
+ *
+ * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+ *
+ */
+
 package lab.ma.domain;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.awt.*;
+import java.util.Arrays;
 
 /**
  * Created by cbadenes on 14/02/16.
  */
 public class ColorFactory {
+
 
     public static Color colorOf(Agent.Type type){
         float[] colors = new float[3];

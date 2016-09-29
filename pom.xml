@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2016. Universidad Politecnica de Madrid
+  ~
+  ~ @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
+  ~
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/maven-v4_0_0.xsd">
@@ -52,6 +59,7 @@
         <maven.resources.plugin.version>2.7</maven.resources.plugin.version>
         <surefire.junit.version>2.12</surefire.junit.version>
 
+        <librairy.lda.version>0.15</librairy.lda.version>
         <jackson.core.version>2.7.1</jackson.core.version>
         <jackson.version>1.9.11</jackson.version>
         <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
@@ -70,6 +78,27 @@
         </resources>
 
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.10</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <!-- Maven Test Plugin -->
             <plugin>
@@ -111,6 +140,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- librairy boot dependencyManagement -->
+            <dependency>
+                <groupId>org.librairy</groupId>
+                <artifactId>librairy-modeler-lda</artifactId>
+                <version>${librairy.lda.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
@@ -171,23 +208,10 @@
 
     <dependencies>
 
-      <dependency>
-          <groupId>org.librairy</groupId>
-          <artifactId>librairy-boot</artifactId>
-          <version>0.4-SNAPSHOT</version>
-      </dependency>
-
         <dependency>
             <groupId>org.librairy</groupId>
-            <artifactId>harvester-research</artifactId>
-            <version>0.4-SNAPSHOT</version>
-            <classifier>lib</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>org.librairy</groupId>
-            <artifactId>modeler-lda</artifactId>
-            <version>0.3-SNAPSHOT</version>
+            <artifactId>librairy-modeler-lda</artifactId>
+            <version>${librairy.lda.version}</version>
             <classifier>lib</classifier>
         </dependency>
 
@@ -256,17 +280,27 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>4.1.9.RELEASE</version>
+            <version>4.2.7.RELEASE</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <repositories>
 
-        <!-- librairy -->
+        <!-- librairy Boot-->
         <repository>
-            <id>librairy-mvn-repo</id>
+            <id>librairy-boot-repo</id>
             <url>https://raw.github.com/librairy/boot/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+
+        <!-- librairy LDA -->
+        <repository>
+            <id>librairy-lda-repo</id>
+            <url>https://raw.github.com/librairy/modeler-lda/mvn-repo/</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
